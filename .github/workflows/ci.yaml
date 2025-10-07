@@ -1,0 +1,13 @@
+name: CI with Docker Compose
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run tests
+        run: |
+          docker compose -f compose.test.yaml --env-file .env.example run --rm --build --quiet-pull backend
+          docker compose -f compose.test.yaml --env-file .env.example down

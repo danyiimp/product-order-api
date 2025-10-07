@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:17
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_TEST_DB}" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    env_file:
+      - .env.example  # For demo only
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_DB=${POSTGRES_TEST_DB?Variable not set}
+
+  backend:
+    build:
+      context: .
+      target: testing
+      args:
+        INSTALL_DEV: "true"
+    environment:
+      - POSTGRES_SERVER=db
+    env_file:
+      - .env.example  # For demo only
+    depends_on:
+      db:
+        condition: service_healthy
+    command: pytest
